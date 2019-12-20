@@ -151,6 +151,7 @@ def plotMachine(machines,s_i,mint):
     bws=[]
 
     cnts=[]
+    jobids=[]
 
 
     for mach in sorted(machines):
@@ -178,12 +179,14 @@ def plotMachine(machines,s_i,mint):
             tots += machines[mach][slot]["total"]
             bws+=machines[mach][slot]["bw"]
             names.append(str(mach)+"_"+str(slot))
+            jobids.append(machines[mach][slot]["jobids"])
             if len(machines[mach][slot]["total"]) == 4:
                 print(mach,slot,machines[mach][slot]["jobids"])
         
 
     ssind=np.argsort(np.array(totals))
     snames = np.array(names)[ssind]
+    sjobids= np.array(jobids)[ssind]
 
     print(np.sum(tots),np.sum(io_tots),np.sum(exps),np.sum(cpus),"bws: ",np.mean(bws),np.max(bws),np.min(bws))
     global tot_sum
@@ -221,16 +224,19 @@ def plotMachine(machines,s_i,mint):
 
  
     if s_i == 0:
-        plt.bar(ind,np.array(totals)[sind],color="w",edgecolor="k",width=1,alpha=0.5)
+        # plt.bar(ind,np.array(totals)[sind],color="w",edgecolor="k",width=1,alpha=0.5)
         bottoms = np.array(stimes)[sind]
         for i in range(1,len(bars)):
             print(bars[i][0][3])
             bottoms+=bars[i][0][sind]
+        print (np.where(bottoms > np.array(totals)[sind]))
+        print (sjobids[np.where(bottoms > np.array(totals)[sind])])
         print (bottoms[3])
 
         for i in reversed(range(1,len(bars))):
             bottoms-=bars[i][0][sind]
             plt.bar(ind,bars[i][0][sind],bottom=bottoms,color=bars[i][1],edgecolor=ec,width=1,label=bars[i][2])
+        # plt.bar(ind,np.array(totals)[sind],color="w",edgecolor="k",width=1,alpha=0.5)
     else: 
         plt.bar(ind,bars[0][0][sind],bottom=np.array(stimes)[sind],color=bars[0][1],edgecolor=ec,width=1)
         bottoms = np.array(stimes)[sind]

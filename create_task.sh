@@ -29,14 +29,15 @@ fi
 
 echo "use_ib: ${use_ib} use_bounded_filelock: ${use_bounded_filelock}"
 
-for fnum in `seq 0 ${num_files}`; do
+# for fnum in `seq 0 ${num_files}`; do
 
-cat <<EOT > tasks/${iorate}_${tpf}_${fnum}.sh
+# cat <<EOT > tasks/${iorate}_${tpf}_${fnum}.sh
+cat <<EOT > tasks/${iorate}_${tpf}.sh
 #!/bin/bash
 MY_HOSTNAME=\`hostname\`
 ulimit -n 4096
 
-TAZER_PATH=/people/frie869/lib
+TAZER_PATH=${TAZER_ROOT}/lib
 echo "\$JOBID"
 TASKDIR="./"
 mkdir -p \$TASKDIR\$JOBID
@@ -98,7 +99,8 @@ compression=0
 blocksize=\$(( 1024*1024 )) #16777216
 
 # fnum=\`shuf -i1-${num_files} -n1\` #for 2:1 task to file ratio
-fnum=$fnum
+# fnum=$fnum
+fnum=\$(( \${MYID} / ${tpf} ))
 infile="belle2_data/tazer_data/tazer8GB_\${fnum}.dat"
 t=\$(date +%s)
 var_names="\${var_names},InputDataSet" && var_vals="\${var_vals},\${fnum}" && var_times="\${var_times},\${t}"
@@ -159,12 +161,14 @@ python send_task_msg.py "1=\$MY_HOSTNAME=\$JOBID"
 wait
 EOT
 
-done
+# done
 
 echo "creating task list "
 touch CurTasks.dat
 for i in `seq 0 $(( numTasks-1 ))`; do
-echo "${iorate}_${tpf}_$(( i/tpf )).sh" >> CurTasks.dat
+# echo "${iorate}_${tpf}_$(( i/tpf )).sh" >> CurTasks.dat
+echo "${iorate}_${tpf}.sh" >> CurTasks.dat
+
 # for i in `seq 1 ${cores_per_node}`; do
 # echo "${iorate}_${tpf}.sh" >> CurTasks.dat
 done

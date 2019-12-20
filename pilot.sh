@@ -13,22 +13,23 @@ echo "$MY_HOSTNAME $GET_TASK_HOST $CORES_PER_NODE"
 #clean up from previous experiments
 rm /dev/shm/*tazer*
 rm -r /tmp/*tazer*
-mkdir -p /tmp/${USER}/tazer_cache
+rm -r /tmp/${USER}
+mkdir -p /tmp/tazer${USER}/tazer_cache
 
 touch ${JOBID}_time.txt
 date +%s >> ${JOBID}_time.txt
 
 module unload gcc
-rm -r /state/partition1/${USER}
+rm -r /state/partition1/tazer${USER}
 
-mkdir -p /files0/${USER}/tazer_cache/${MY_HOSTNAME}/fc
-ln -s /files0/${USER}/tazer_cache/${MY_HOSTNAME}/fc /tmp/${USER}/tazer_cache
+mkdir -p /files0/tazer${USER}/tazer_cache/${MY_HOSTNAME}/fc
+ln -s /files0/tazer${USER}/tazer_cache/${MY_HOSTNAME}/fc /tmp/tazer${USER}/tazer_cache
 
-mkdir -p /state/partition1/${USER}/tazer_cache/bbc
-ln -s /state/partition1/${USER}/tazer_cache/bbc  /tmp/${USER}/tazer_cache/
+mkdir -p /state/partition1/tazer${USER}/tazer_cache/bbc
+ln -s /state/partition1/tazer${USER}/tazer_cache/bbc  /tmp/tazer${USER}/tazer_cache/
 
 mkdir -p /files0/${USER}/tazer_cache/gc
-ln -s /files0/${USER}/tazer_cache/gc /tmp/${USER}/tazer_cache
+ln -s /files0/${USER}/tazer_cache/gc /tmp/tazer${USER}/tazer_cache
 
 np=$CORES_PER_NODE #24
 

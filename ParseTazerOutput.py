@@ -41,7 +41,9 @@ def getCacheData(type, name, data):
     prefetches = 0
     stalls = 0
     stall_time = 0.0
+    stall_amount = 0
     ovh_time = 0.0
+    reads = 0
     read_time = 0.0
     read_amt = 0
     destruction_time = 0.0
@@ -61,17 +63,19 @@ def getCacheData(type, name, data):
             elif vals[3] == "stalls":
                 stall_time += float(vals[4])
                 stalls += int(vals[5])
+                stall_amount += int(vals[6])
             elif vals[3] == "ovh":
                 ovh_time += float(vals[4])
             elif vals[3] == "read":
                 read_time += float(vals[4])
+                reads += int(vals[5])
                 read_amt += int(vals[6])
             elif vals[3] == "destructor":
                 destruction_time += float(vals[4])
             elif vals[3] == "constructor":
                 destruction_time += float(vals[4])
 
-    return hits, hit_time, hit_amount, misses, miss_time, prefetches, stalls, stall_time, ovh_time, read_time, read_amt, destruction_time
+    return hits, hit_time, hit_amount, misses, miss_time, prefetches, stalls, stall_time, stall_amount, ovh_time, reads, read_time, read_amt, destruction_time
 
 
 def getConnectionData(data):
@@ -126,18 +130,17 @@ if __name__ == "__main__":
         for n in names:
             labels.append(t+"_"+n)
 
-    # hits,hit_time,hit_amount,misses,miss_time,prefetches,stalls,stall_time,ovh_time,read_time,read_amt,destruction_time
+    # hits,hit_time,hit_amount,misses,miss_time,prefetches,stalls,stall_time,stall_amount,ovh_time,reads,read_time,read_amt,destruction_time
 
     # vs = getCacheData("request", "base", data)
     # labels += ["cache_accesses", "cache_time", "cache_amount",
     #            "base_cache_ovh", "base_destruction"]
     # vals += [vs[0], vs[1], vs[10], vs[8], vs[11]]
 
-    caches = ["base", "privatememory", "sharedmemory",
-              "burstbuffer", "boundedfilelock", "network"]
+    caches = ["base","privatememory","sharedmemory","burstbuffer", "boundedfilelock","network"]
     types = ["request", "prefetch"]
     names = ["hits", "hit_time", "hit_amount", "misses", "miss_time", "prefetches",
-             "stalls", "stall_time", "ovh_time", "read_time", "read_amt", "destruction_time"]
+             "stalls", "stall_time", "stall_amt", "ovh_time", "reads", "read_time", "read_amt", "destruction_time"]
 
     for t in types:
         for c in caches:
@@ -165,7 +168,7 @@ if __name__ == "__main__":
     for i in range(len(labels)):
         label_str += labels[i]+","
         vals_str += str(vals[i])+","
-        print(labels[i], str(vals[i]))
+        # print (labels[i],str(vals[i]))
 
     print(label_str[:-1])
     print(vals_str[:-1])

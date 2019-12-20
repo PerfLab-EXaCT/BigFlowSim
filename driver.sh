@@ -2,7 +2,8 @@
 module unload python/anaconda3.2019.3
 
 #---------------CHANGE ME!!!!---------------------
-export TAZER_ROOT=${HOME}/Projects/tazer/bs_build
+# this should point to the install dir for tazer
+export TAZER_ROOT=${HOME}
 #-------------------------------------------------
 
 #------- find directory this script is located----------

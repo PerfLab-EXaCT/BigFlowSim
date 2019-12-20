@@ -17,7 +17,7 @@ export TAZER_BOUNDED_FILELOCK_CACHE_PATH=/files0/${USER}/tazer_server_cache
 
 export TAZER_SERVER_CONNECTIONS=conns.meta 
 #------------launch a server on ib net and on ethernet--------------
-gdb --batch --command=tazer.gdb --arg ${TAZER_ROOT}/src/server/server 5001 "$(hostname -a)".ibnet &> "$(hostname -a)".ibnet.log &
-gdb --batch --command=tazer.gdb --arg ${TAZER_ROOT}/src/server/server 5001 "$(hostname -a)" &> "$(hostname -a)".log
+gdb --batch --command=tazer.gdb --arg ${TAZER_ROOT}/bin/server 5001 "$(hostname -a)".ibnet &> "$(hostname -a)".ibnet.log &
+gdb --batch --command=tazer.gdb --arg ${TAZER_ROOT}/bin/server 5001 "$(hostname -a)" &> "$(hostname -a)".log
 
 wait
