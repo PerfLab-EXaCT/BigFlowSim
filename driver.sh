@@ -84,12 +84,14 @@ for ioratio in 1; do
         workers_task_id=`sbatch --exclude=node33 --parsable -d after:${get_task_id} -N ${nodes} ./launch_workers.sh ${get_task_node} ${task_server_port} ${cores_per_node} ${nodes} ${numRounds}`
         
         salloc -N1 -d afterany:${workers_task_id} scancel ${get_task_id}
-        echo "closing servers"
-        for server in `python ParseSlurmNodelist.py $tazer_server_nodes`; do 
-            echo "closing $server"
-            CloseTazerServer ${server}.ibnet 5001
-            CloseTazerServer $server 5002
-        done
+	if [ "${use_ib}" == "1" ]; then
+            echo "closing servers"
+            for server in `python ParseSlurmNodelist.py $tazer_server_nodes`; do 
+               echo "closing $server"
+               CloseTazerServer ${server}.ibnet 5001
+               CloseTazerServer $server 5002
+            done
+        fi
         echo "${get_task_id} ${get_task_node}"
         scancel ${get_task_id}
         ./create_plots.sh
