@@ -1,5 +1,7 @@
 #!/bin/bash
-module unload python/anaconda3.2019.3
+module purge
+module load gcc/8.1.0
+#module unload python/anaconda3.2019.3
 
 #---------------CHANGE ME!!!!---------------------
 # this should point to the install dir for tazer
