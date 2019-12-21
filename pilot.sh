@@ -22,8 +22,8 @@ date +%s >> ${JOBID}_time.txt
 module unload gcc
 rm -r /state/partition1/tazer${USER}
 
-mkdir -p /files0/tazer${USER}/tazer_cache/${MY_HOSTNAME}/fc
-ln -s /files0/tazer${USER}/tazer_cache/${MY_HOSTNAME}/fc /tmp/tazer${USER}/tazer_cache
+mkdir -p /files0/${USER}/tazer_cache/${MY_HOSTNAME}/fc
+ln -s /files0/${USER}/tazer_cache/${MY_HOSTNAME}/fc /tmp/tazer${USER}/tazer_cache
 
 mkdir -p /state/partition1/tazer${USER}/tazer_cache/bbc
 ln -s /state/partition1/tazer${USER}/tazer_cache/bbc  /tmp/tazer${USER}/tazer_cache/
