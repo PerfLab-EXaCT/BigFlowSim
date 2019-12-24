@@ -37,9 +37,13 @@ def getData(path):
     start_time = []
     amounts = []
 
+    
+
     for jobid in data:
         labels = data[jobid][0]
         vals = data[jobid][1]
+
+        
 
         if mint > int(vals[labels.index("StartTime")]):
             mint = int(vals[labels.index("StartTime")])
@@ -67,6 +71,8 @@ def getData(path):
         else:
             pass
             # print(vals)
+
+    
 
     return [exp_times, latencies, amounts]
 

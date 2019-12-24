@@ -39,7 +39,7 @@ echo "TAZER_ROOT=${TAZER_ROOT}"
 # ------------- experiment parameters: -----------
 cores_per_node=24
 nodes=25
-numRounds=1
+numRounds=2
 use_ib=0
 numTasks=$(( cores_per_node * nodes * numRounds ))
 echo "Number of tasks = ${numTasks}"
@@ -75,6 +75,8 @@ for ioratio in 1; do
 
         echo "creating tasks"
         ./create_task.sh ${ioratio} ${tpf} ${numTasks} ${cores_per_node} ${nodes} ${tazer_server_nodes} ${use_ib}
+        # ./create_task_2.sh ${ioratio} ${tpf} ${numTasks} ${cores_per_node} ${nodes} ${tazer_server_nodes} ${use_ib}
+
         
         echo "launching task server"
         get_task_id=`sbatch --parsable ./get_task.sh ${task_server_port}`

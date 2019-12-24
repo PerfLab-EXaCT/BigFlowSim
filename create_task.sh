@@ -29,9 +29,6 @@ fi
 
 echo "use_ib: ${use_ib} use_bounded_filelock: ${use_bounded_filelock}"
 
-# for fnum in `seq 0 ${num_files}`; do
-
-# cat <<EOT > tasks/${iorate}_${tpf}_${fnum}.sh
 cat <<EOT > tasks/${iorate}_${tpf}.sh
 #!/bin/bash
 MY_HOSTNAME=\`hostname\`
@@ -42,7 +39,7 @@ echo "\$JOBID"
 TASKDIR="./"
 mkdir -p \$TASKDIR\$JOBID
 cp send_task_msg.py \$TASKDIR\$JOBID
-cp parseTazerOutput.py \$TASKDIR\$JOBID
+cp ParseTazerOutput.py \$TASKDIR\$JOBID
 cd \$TASKDIR\$JOBID
 
 loop=\`python send_task_msg.py "6=\$MY_HOSTNAME=\$JOBID"\`
@@ -147,7 +144,7 @@ LD_PRELOAD=\${preload}:\${tazer_lib} ${scriptDir}/workloadSim -f ${scriptDir}/${
 t=\$(date +%s)
 var_names="\${var_names},StopExp" && var_vals="\${var_vals},\${t}" && var_times="\${var_times},\${t}"
 
-parsed=\`python parseTazerOutput.py \${out_dir}\${outfile}\`
+parsed=\`python ParseTazerOutput.py \${out_dir}\${outfile}\`
 tmp_names=\`echo "\$parsed" | grep -oP '(?<=labels:).*'\` 
 tmp_vals=\`echo "\$parsed" | grep -oP '(?<=vals:).*'\` 
 var_names="\${var_names},\${tmp_names}" && var_vals="\${var_vals},\${tmp_vals}"

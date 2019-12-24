@@ -47,6 +47,7 @@ def getCacheData(type, name, data):
     read_time = 0.0
     read_amt = 0
     destruction_time = 0.0
+    construction_time = 0.0
 
     for line in data:
         if name+" "+type in line:
@@ -73,9 +74,9 @@ def getCacheData(type, name, data):
             elif vals[3] == "destructor":
                 destruction_time += float(vals[4])
             elif vals[3] == "constructor":
-                destruction_time += float(vals[4])
+                construction_time += float(vals[4])
 
-    return hits, hit_time, hit_amount, misses, miss_time, prefetches, stalls, stall_time, stall_amount, ovh_time, reads, read_time, read_amt, destruction_time
+    return hits, hit_time, hit_amount, misses, miss_time, prefetches, stalls, stall_time, stall_amount, ovh_time, reads, read_time, read_amt, destruction_time, construction_time
 
 
 def getConnectionData(data):
@@ -140,7 +141,7 @@ if __name__ == "__main__":
     caches = ["base","privatememory","sharedmemory","burstbuffer", "boundedfilelock","network"]
     types = ["request", "prefetch"]
     names = ["hits", "hit_time", "hit_amount", "misses", "miss_time", "prefetches",
-             "stalls", "stall_time", "stall_amt", "ovh_time", "reads", "read_time", "read_amt", "destruction_time"]
+             "stalls", "stall_time", "stall_amt", "ovh_time", "reads", "read_time", "read_amt", "destruction_time", "construction_time"]
 
     for t in types:
         for c in caches:
