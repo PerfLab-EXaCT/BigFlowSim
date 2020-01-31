@@ -5,8 +5,11 @@ module load gcc/8.1.0
 
 #---------------CHANGE ME!!!!---------------------
 # this should point to the install dir for tazer
-export TAZER_ROOT=~/local/
+export TAZER_ROOT=${HOME}
+TAZER_BUILD_DIR=${HOME}/Projects/tazer/build_bs
+TAZER_DATA_DIR=/files0/frie869/burcu_exp/tzr/
 #-------------------------------------------------
+
 
 #------- find directory this script is located----------
 
@@ -20,6 +23,7 @@ export TAZER_ROOT=~/local/
 #     [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
 #     echo "S: ${SOURCE}"
 # done
+
 
 SCRIPT_NAME=$(basename $(test -L "$0" && readlink "$0" || echo "$0"));
 scripts_dir=$(cd $(dirname "$0") && pwd);
@@ -37,11 +41,12 @@ echo "TAZER_ROOT=${TAZER_ROOT}"
 export TAZER_EXP_DIR=${exp_base_dir}
 
 
+
 # ------------- experiment parameters: -----------
 cores_per_node=24
-nodes=25
-numRounds=5
-use_ib=1
+nodes=1
+numRounds=2
+use_local_server=1 #0=no local servers, 1=local server over ethernet, 2= local server over ethernet and IB, 3 forwarding server over ethernet, 4 forwarding server over ether + IB
 numTasks=$(( cores_per_node * nodes * numRounds ))
 echo "Number of tasks = ${numTasks}"
 #bmutlu
@@ -63,11 +68,9 @@ for ioratio in 16; do
         make 
         #-------------------------------------------------
         chmod +x *.sh
-        if [ "${use_ib}" == "1" ]; then
-	    cp tazer_srv.sh ${data_dir}  
-	    cp tazer.gdb ${data_dir}
-	    echo "launching tazer servers"
-            tazer_server_task_id=$(sbatch --exclude=node33 -N2 --parsable ./launch_ib_tazer.sh) #node33 infiniband is not working?
+        if [ "${use_local_server}" != "0" ]; then
+            echo "launching tazer servers"
+            tazer_server_task_id=$(sbatch --exclude=node33 -N2 --parsable ./launch_tazer_server.sh $use_local_server $TAZER_DATA_DIR) #node33 infiniband is not working?
             tazer_server_nodes=`squeue -j ${tazer_server_task_id} -h -o "%N"`
             while [ -z "$tazer_server_nodes" ]; do
                 sleep 1
@@ -79,8 +82,8 @@ for ioratio in 16; do
         
 
         echo "creating tasks"
-        ./create_task.sh ${ioratio} ${tpf} ${numTasks} ${cores_per_node} ${nodes} ${tazer_server_nodes} ${use_ib} ${tlimit}
-        # ./create_task_2.sh ${ioratio} ${tpf} ${numTasks} ${cores_per_node} ${nodes} ${tazer_server_nodes} ${use_ib}
+        ./create_task.sh ${ioratio} ${tpf} ${numTasks} ${cores_per_node} ${nodes} ${tazer_server_nodes} ${use_local_server} ${tlimit}
+        # ./create_task_2.sh ${ioratio} ${tpf} ${numTasks} ${cores_per_node} ${nodes} ${tazer_server_nodes} ${use_local_server}
 
         
         echo "launching task server"
@@ -94,12 +97,14 @@ for ioratio in 16; do
         workers_task_id=`sbatch --exclude=node33 --parsable -d after:${get_task_id} -N ${nodes} ./launch_workers.sh ${get_task_node} ${task_server_port} ${cores_per_node} ${nodes} ${numRounds}`
         
         salloc -N1 -d afterany:${workers_task_id} scancel ${get_task_id}
-	if [ "${use_ib}" == "1" ]; then
+	if [ "${use_local_server}" != "0" ]; then
             echo "closing servers"
             for server in `python ParseSlurmNodelist.py $tazer_server_nodes`; do 
-               echo "closing $server"
-               CloseTazerServer ${server}.ibnet 5001
-               CloseTazerServer $server 5001
+                echo "closing $server"
+                if [ "${use_local_server}" == "2" ]; then
+                    ${TAZER_BUILD_DIR}/test/CloseServer ${server}.ibnet 5001
+                fi
+               ${TAZER_BUILD_DIR}/test/CloseServer $server 5001
             done
         fi
         echo "${get_task_id} ${get_task_node}"

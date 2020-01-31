@@ -20,15 +20,15 @@ echo "${ioratio} -- ${iorate} -- ${iointensity} -- ${tpf} -- ${num_files} ${numT
 
 
 tazer_servers=$6
-use_ib=$7
+use_local_server=$7
 
-if [ "${use_ib}" == "0" ]; then
+if (( use_local_server < 3 )); then
     use_bounded_filelock=1
 else
     use_bounded_filelock=0
 fi
 
-echo "use_ib: ${use_ib} use_bounded_filelock: ${use_bounded_filelock}"
+echo "use_local_server: ${use_local_server} use_bounded_filelock: ${use_bounded_filelock}"
 
 cat <<EOT > tasks/${iorate}_${tpf}.sh
 #!/bin/bash
@@ -103,20 +103,31 @@ infile="belle2_data/tazer_data/tazer8GB_\${fnum}.dat"
 t=\$(date +%s)
 var_names="\${var_names},InputDataSet" && var_vals="\${var_vals},\${fnum}" && var_times="\${var_times},\${t}"
 
-if [ "${use_ib}" == "0" ]; then
+if [ "${use_local_server}" == "0" ]; then
     server="130.20.68.151"  #this is the IP address for blueskys head node (which we have a TAZER server running on, or we have an ssh tunnel forwarding ports to a remote TAZER server)
     echo "\${server}:5101:\${compression}:0:0:\${blocksize}:\${infile}|\${server}:5201:\${compression}:0:0:\${blocksize}:\${infile}|\${server}:5301:\${compression}:0:0:\${blocksize}:\${infile}|\${server}:5401:\${compression}:0:0:\${blocksize}:\${infile}|" | tee \$data_dir/\tazer8GB.dat.\${fnum}.meta.in
 else
     server_list=""
-    for server in `python ParseSlurmNodelist.py $tazer_servers`; do
-        server_list="\${server_list}\${server}.ibnet:5001:\${compression}:0:0:\${blocksize}:\${infile}|\${server}:5001:\${compression}:0:0:\${blocksize}:\${infile}|"
-    done
+    if [ "${use_local_server}" == "1" ] || ["${use_local_server}" == "3" ]; then
+        for server in `python ParseSlurmNodelist.py $tazer_servers`; do
+            server_list="\${server_list}\${server}:5001:\${compression}:0:0:\${blocksize}:\${infile}|"
+        done
+    else
+        for server in `python ParseSlurmNodelist.py $tazer_servers`; do
+            server_list="\${server_list}\${server}.ibnet:5001:\${compression}:0:0:\${blocksize}:\${infile}|\${server}:5001:\${compression}:0:0:\${blocksize}:\${infile}|"
+        done
+    fi
     echo "\${server_list}" | tee \$data_dir/\tazer8GB.dat.\${fnum}.meta.in
 fi
 
 
 out_port=4
-echo "130.20.68.151:5\${out_port}01:\${compression}:0:0:\${blocksize}:output/\${JOBID}.root|" | tee tazer_output.dat.meta.out
+#echo "130.20.68.151:5\${out_port}01:\${compression}:0:0:\${blocksize}:output/\${JOBID}.root|" | tee tazer_output.dat.meta.out
+
+for server in `python ParseSlurmNodelist.py $tazer_servers`; do
+    echo "\${server}:5001:\${compression}:0:0:\${blocksize}:output/\${JOBID}.root|" | tee tazer_output.dat.meta.out
+    break
+done
 
 echo "### Copying input files ###"
 t=\$(date +%s)
