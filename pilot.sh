@@ -6,7 +6,7 @@ CORES_PER_NODE=$3
 SCRIPTS_DIR=`pwd`
 
 JOBID=${SLURM_JOB_ID}_${SLURM_NODEID}
-RANDOM_START=0  #0: all tasks start at the same time, 1: tasks on a node start at same time, nodes start at random times, 2: tasks start at random times
+RANDOM_START=2  #0: all tasks start at the same time, 1: tasks on a node start at same time, nodes start at random times, 2: tasks start at random times
 
 MY_HOSTNAME=`hostname`
 echo "$MY_HOSTNAME $GET_TASK_HOST $CORES_PER_NODE"
@@ -189,7 +189,7 @@ chmod +x subtask.sh
 
 for p in `seq 1 $np`; do
     if [ "$RANDOM_START" -eq "1" ]; then
-        twait=`shuf -i 1-300 -n 1`
+        twait=`shuf -i 1-60 -n 1`
         sleep $twait
     fi
     ./subtask.sh $p &

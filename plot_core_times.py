@@ -243,8 +243,8 @@ def plotMachine(machines,s_i,mint):
         print (np.where(bottoms > np.array(totals)[sind]))
         print (sjobids[np.where(bottoms > np.array(totals)[sind])])
         print (bottoms[3])
-        print(sjobids[136],sjobids[137])
-        print(sjobids[178],sjobids[179],sjobids[180])
+        # print(sjobids[136],sjobids[137])
+        # print(sjobids[178],sjobids[179],sjobids[180])
 
         for i in reversed(range(1,len(bars))):
             bottoms-=bars[i][0][sind]
@@ -300,18 +300,18 @@ def plotData(path,title,fname,leg_loc):
     mint=99999999999999999
     temp=0
 
-    the_jobs={}
-    baseid="99501_"
-    for n in range(0,25):
-        for c in range(1,25):
-            for r in ["0","1"]:
-                j=baseid+str(n)+"_"+str(c)+"_"+r
-                the_jobs[j]=0
+    # the_jobs={}
+    # baseid="99501_"
+    # for n in range(0,25):
+    #     for c in range(1,25):
+    #         for r in ["0","1"]:
+    #             j=baseid+str(n)+"_"+str(c)+"_"+r
+    #             the_jobs[j]=0
     
     accesses=[]
     for jobid in data:
         # print (jobid.strip,)
-        the_jobs[jobid.strip()]=1
+        # the_jobs[jobid.strip()]=1
         labels=data[jobid][0]
         vals=data[jobid][1]
         host=vals[labels.index("Host")]
@@ -337,10 +337,10 @@ def plotData(path,title,fname,leg_loc):
         else:
             print(host)
 
-    print (the_jobs)
-    for j in the_jobs.keys():
-        if the_jobs[j]==0:
-            print("missing job!",j)
+    # print (the_jobs)
+    # for j in the_jobs.keys():
+    #     if the_jobs[j]==0:
+    #         print("missing job!",j)
    
 
     print (len(bluesky),len(ivy),len(amd),len(haswell_1),len(haswell_2))
