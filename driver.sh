@@ -5,7 +5,7 @@ module load gcc/8.1.0
 
 #---------------CHANGE ME!!!!---------------------
 # this should point to the install dir for tazer
-export TAZER_ROOT=${HOME}
+export TAZER_ROOT=~/local/
 #-------------------------------------------------
 
 #------- find directory this script is located----------
@@ -28,21 +28,24 @@ scripts_dir=$(cd $(dirname "$0") && pwd);
 
 #----------directory this script is executed---------------
 exp_base_dir=`pwd`
+data_dir=/files0/mutl832/tzr/
 #----------------------------------------------------------
 
 echo "scripts_dir=${scripts_dir}"
 echo "exp_base_dir=${exp_base_dir}"
 echo "TAZER_ROOT=${TAZER_ROOT}"
-
+export TAZER_EXP_DIR=${exp_base_dir}
 
 
 # ------------- experiment parameters: -----------
 cores_per_node=24
 nodes=25
-numRounds=2
-use_ib=0
+numRounds=5
+use_ib=1
 numTasks=$(( cores_per_node * nodes * numRounds ))
 echo "Number of tasks = ${numTasks}"
+#bmutlu
+tlimit=300
 #-------------------------------------------------
 
 task_server_port=5555
@@ -50,8 +53,8 @@ task_server_port=5555
 
 # for ioratio in  1 2 4 8 16; do #with respect to 125MB/s
     # for tpf in 2 4 8 16; do
-for ioratio in 1; do
-    for tpf in 2; do
+for ioratio in 16; do
+    for tpf in 16; do
         rm -r /files0/${USER}/tazer_cache/ #cleanup from previous experiment
         mkdir $((ioratio*125))MBs_io_${tpf}_tpf 
         cd $((ioratio*125))MBs_io_${tpf}_tpf
@@ -61,7 +64,9 @@ for ioratio in 1; do
         #-------------------------------------------------
         chmod +x *.sh
         if [ "${use_ib}" == "1" ]; then
-            echo "launching tazer servers"
+	    cp tazer_srv.sh ${data_dir}  
+	    cp tazer.gdb ${data_dir}
+	    echo "launching tazer servers"
             tazer_server_task_id=$(sbatch --exclude=node33 -N2 --parsable ./launch_ib_tazer.sh) #node33 infiniband is not working?
             tazer_server_nodes=`squeue -j ${tazer_server_task_id} -h -o "%N"`
             while [ -z "$tazer_server_nodes" ]; do
@@ -74,7 +79,7 @@ for ioratio in 1; do
         
 
         echo "creating tasks"
-        ./create_task.sh ${ioratio} ${tpf} ${numTasks} ${cores_per_node} ${nodes} ${tazer_server_nodes} ${use_ib}
+        ./create_task.sh ${ioratio} ${tpf} ${numTasks} ${cores_per_node} ${nodes} ${tazer_server_nodes} ${use_ib} ${tlimit}
         # ./create_task_2.sh ${ioratio} ${tpf} ${numTasks} ${cores_per_node} ${nodes} ${tazer_server_nodes} ${use_ib}
 
         
@@ -94,7 +99,7 @@ for ioratio in 1; do
             for server in `python ParseSlurmNodelist.py $tazer_server_nodes`; do 
                echo "closing $server"
                CloseTazerServer ${server}.ibnet 5001
-               CloseTazerServer $server 5002
+               CloseTazerServer $server 5001
             done
         fi
         echo "${get_task_id} ${get_task_node}"

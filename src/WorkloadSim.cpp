@@ -82,7 +82,7 @@ void loadData(std::string file, std::vector<std::string> &files, std::vector<uin
     }
 }
 
-std::tuple<double, double, double, double, double> executeTrace(std::vector<std::string> &files, std::string inFileSuffix, std::vector<uint64_t> &offsets, std::vector<uint64_t> &counts, double ioIntensity, double timeVar, uint64_t largest) {
+std::tuple<double, double, double, double, double> executeTrace(std::vector<std::string> &files, std::string inFileSuffix, std::vector<uint64_t> &offsets, std::vector<uint64_t> &counts, double ioIntensity, double timeVar, uint64_t largest, int64_t timeLimit) {
     auto tempStart = getCurrentTime();
     double sumCpuTime = 0;
     double actualCpuTime = 0;
@@ -101,6 +101,9 @@ std::tuple<double, double, double, double, double> executeTrace(std::vector<std:
     std::string curFile = "";
     bool output = false;
     for (int i = 0; i < numAccesses; i++) {
+        if (timeLimit && getCurrentTime() - tempStart >= timeLimit*billion) {
+	    break;
+        }
         auto start = getCurrentTime();
         if (files[i] != curFile) {
             if (fd) {
@@ -162,6 +165,7 @@ int main(int argc, char *argv[]) {
     std::string dataFile = getStringArg(argv, argv + argc, "-f", "--infile", "access_new_in_out.txt");
     std::string inFileSuffix = getStringArg(argv, argv + argc, "-m", "--inmetasuffix", ".meta.in");
     double ioIntensity = getDoubleArg(argv, argv + argc, "-i", "--iointensity", 1000.0);
+    int64_t timeLimit = getIntArg(argv, argv + argc, "-t", "--timelimit", 0);
     double timeVar = 0.05;
 
     double cpuTime = 0;
@@ -178,7 +182,7 @@ int main(int argc, char *argv[]) {
     loadData(dataFile, files, offsets, counts, largest);
     uint64_t setupTime = getCurrentTime() - startTime;
     uint64_t simTime = getCurrentTime();
-    auto vals = executeTrace(files, inFileSuffix, offsets, counts, ioIntensity, timeVar, largest);
+    auto vals = executeTrace(files, inFileSuffix, offsets, counts, ioIntensity, timeVar, largest, timeLimit);
     simTime = getCurrentTime() - simTime;
     uint64_t totTime = getCurrentTime() - startTime;
     std::cout << "Setup time: " << setupTime / billion << std::endl;

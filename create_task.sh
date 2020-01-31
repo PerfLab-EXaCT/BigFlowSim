@@ -10,6 +10,7 @@ tpf=$2
 numTasks=$3
 cores_per_node=$4
 nodes=$5
+timelimit=$8
 numCores=$((cores_per_node * nodes))
 iointensity=`python File_access_pattern_gen.py ${ioratio} ${tpf} ${numTasks} ${numCores} ${iorate}_${tpf}_accesses.txt`
 echo "$iointensity"
@@ -139,7 +140,7 @@ time TAZER_PREFETCH=0 \
 TAZER_SHARED_MEM_CACHE=1 TAZER_SHARED_MEM_CACHE_SIZE=\${TAZER_SHARED_MEM_CACHE_SIZE} \
 TAZER_BB_CACHE=1 TAZER_BB_CACHE_SIZE=\${TAZER_BB_CACHE_SIZE} \
 TAZER_BOUNDED_FILELOCK_CACHE=${use_bounded_filelock} TAZER_BOUNDED_FILELOCK_CACHE_SIZE=\${TAZER_BOUNDED_FILELOCK_CACHE_SIZE} \
-LD_PRELOAD=\${preload}:\${tazer_lib} ${scriptDir}/workloadSim -f ${scriptDir}/${iorate}_${tpf}_accesses.txt -i ${iointensity} -m ".\${fnum}.meta.in" >& \${out_dir}\${outfile}
+LD_PRELOAD=\${preload}:\${tazer_lib} ${scriptDir}/workloadSim -f ${scriptDir}/${iorate}_${tpf}_accesses.txt -i ${iointensity} -m ".\${fnum}.meta.in" -t ${timelimit} >& \${out_dir}\${outfile}
 
 t=\$(date +%s)
 var_names="\${var_names},StopExp" && var_vals="\${var_vals},\${t}" && var_times="\${var_times},\${t}"
