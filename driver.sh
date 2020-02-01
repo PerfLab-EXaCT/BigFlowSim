@@ -5,9 +5,9 @@ module load gcc/8.1.0
 
 #---------------CHANGE ME!!!!---------------------
 # this should point to the install dir for tazer
-export TAZER_ROOT=${HOME}
-TAZER_BUILD_DIR=${HOME}/Projects/tazer/build_bs
-TAZER_DATA_DIR=/files0/frie869/burcu_exp/tzr/
+export TAZER_ROOT=~/local/
+TAZER_BUILD_DIR=${HOME}/projects/Tazer/build/
+TAZER_DATA_DIR=/files0/mutl832/tzr/
 #-------------------------------------------------
 
 
@@ -44,22 +44,21 @@ export TAZER_EXP_DIR=${exp_base_dir}
 
 # ------------- experiment parameters: -----------
 cores_per_node=24
-nodes=1
-numRounds=2
+nodes=25
+numRounds=5
 use_local_server=1 #0=no local servers, 1=local server over ethernet, 2= local server over ethernet and IB, 3 forwarding server over ethernet, 4 forwarding server over ether + IB
 numTasks=$(( cores_per_node * nodes * numRounds ))
 echo "Number of tasks = ${numTasks}"
-#bmutlu
-tlimit=300
+tlimit=300 #time limit for tasks in seconds. Set to 0 for no limit.  
 #-------------------------------------------------
 
 task_server_port=5555
 
 
-# for ioratio in  1 2 4 8 16; do #with respect to 125MB/s
-    # for tpf in 2 4 8 16; do
-for ioratio in 16; do
-    for tpf in 16; do
+for ioratio in  1 2 4 8 16; do #with respect to 125MB/s
+    for tpf in 2 4 8 16; do
+#for ioratio in 16; do
+#    for tpf in 16; do
         rm -r /files0/${USER}/tazer_cache/ #cleanup from previous experiment
         mkdir $((ioratio*125))MBs_io_${tpf}_tpf 
         cd $((ioratio*125))MBs_io_${tpf}_tpf
