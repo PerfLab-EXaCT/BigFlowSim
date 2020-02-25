@@ -156,7 +156,7 @@ std::tuple<double, double, double, double, double> executeTrace(std::vector<std:
         close(fd);
         closeTime += getCurrentTime() - start;
     }
-    delete buf;
+    delete[] buf;
     return std::make_tuple(sumCpuTime, ioTime / billion, actualCpuTime / billion, openTime / billion, closeTime / billion);
 }
 
