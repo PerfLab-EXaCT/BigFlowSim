@@ -11,6 +11,7 @@
 #include <tuple>
 #include <unistd.h>
 #include <vector>
+#include <string.h>
 
 const double billion = 1000000000.0;
 
@@ -22,6 +23,15 @@ uint64_t getCurrentTime() {
     return ret;
 }
 
+bool checkForEquals(char* in){
+    
+    if (strchr( in, '=')){
+        std::cerr<<"Do not currently handle arguments with assingment operator (=), using default value: "<<in<<std::endl;
+        return true;
+    }
+    return false;
+}
+
 char *getStringArg(char **argBegin, char **argEnd, const std::string &option, const std::string &optionFull, const std::string &def) {
     char **it = std::find(argBegin, argEnd, option);
     if (it != argEnd && ++it != argEnd) {
@@ -31,7 +41,7 @@ char *getStringArg(char **argBegin, char **argEnd, const std::string &option, co
     if (it != argEnd && ++it != argEnd) {
         return *it;
     }
-
+    
     return (char *)def.c_str();
 }
 
@@ -62,23 +72,28 @@ double getDoubleArg(char **argBegin, char **argEnd, const std::string &option, c
 void loadData(std::string file, std::vector<std::string> &files, std::vector<uint64_t> &offsets, std::vector<uint64_t> &counts, uint64_t &largest) {
     std::vector<std::vector<std::string>> data;
     std::ifstream in(file);
-    std::string line;
+    if (in.is_open()){
+        std::string line;
 
-    std::string f;
-    uint64_t offset;
-    uint64_t count;
-    uint64_t dummy1, dummy2;
-    std::string curFile = "";
-    int index = 0;
-    while (std::getline(in, line)) {
-        std::stringstream ss(line);
-        ss >> f >> offset >> count >> dummy1 >> dummy2;
-        files.push_back(f);
-        offsets.push_back(offset);
-        counts.push_back(count);
-        if (count > largest) {
-            largest = count;
+        std::string f;
+        uint64_t offset;
+        uint64_t count;
+        uint64_t dummy1, dummy2;
+        std::string curFile = "";
+        int index = 0;
+        while (std::getline(in, line)) {
+            std::stringstream ss(line);
+            ss >> f >> offset >> count >> dummy1 >> dummy2;
+            files.push_back(f);
+            offsets.push_back(offset);
+            counts.push_back(count);
+            if (count > largest) {
+                largest = count;
+            }
         }
+    }
+    else{
+        std::cerr<<"ERROR: cannot find inputfile: "<<file<<std::endl;
     }
 }
 
@@ -134,11 +149,13 @@ std::tuple<double, double, double, double, double> executeTrace(std::vector<std:
         ioTime += getCurrentTime() - start;
         double cpu = 0.0;
         uint64_t cput = 0;
+        
         if (!output) {
             cpu = ((double)counts[i] / 1000000.0) / ioIntensity;
             cpu += cpu * dis(gen) * timeVar;
             cput = cpu * billion;
         }
+        
         start = getCurrentTime();
         while (getCurrentTime() - start < cput) {
             std::this_thread::yield();
@@ -161,10 +178,13 @@ std::tuple<double, double, double, double, double> executeTrace(std::vector<std:
 }
 
 int main(int argc, char *argv[]) {
+    for (int i =0;i <argc;++i){
+        checkForEquals(argv[i]);
+    }
 
     std::string dataFile = getStringArg(argv, argv + argc, "-f", "--infile", "access_new_in_out.txt");
-    std::string inFileSuffix = getStringArg(argv, argv + argc, "-m", "--inmetasuffix", ".meta.in");
-    double ioIntensity = getDoubleArg(argv, argv + argc, "-i", "--iointensity", 1000.0);
+    std::string inFileSuffix = getStringArg(argv, argv + argc, "-m", "--infilesuffix", "");
+    double ioIntensity = getDoubleArg(argv, argv + argc, "-i", "--iorate", 1000.0);
     int64_t timeLimit = getIntArg(argv, argv + argc, "-t", "--timelimit", 0);
     double timeVar = 0.05;
 
