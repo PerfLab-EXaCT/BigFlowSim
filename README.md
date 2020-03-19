@@ -23,34 +23,34 @@ Use File_access_pattern_gen.py to create access pattern files
 the input arguments can losely be characterized by 4 groups:
 
 1. experiment/architecture parameters
-    --ioRate: experiment wide io rate (MB/s) -- cumulative i/o rate accross all cores (internally the per core i/o rate == ioRate/numCores)</br>
-    --tasksPerCore: number of tasks to execute on each core </br>
-    --numCores: number of cores in experiment -- number of simultaneously executing tasks</br>
-    --execTime: desired cpu time (seconds) </br>
+    --ioRate: experiment wide io rate (MB/s) -- cumulative i/o rate accross all cores (internally the per core i/o rate == ioRate/numCores)\
+    --tasksPerCore: number of tasks to execute on each core \
+    --numCores: number of cores in experiment -- number of simultaneously executing tasks\
+    --execTime: desired cpu time (seconds) \
 
 2. file access parameters
-    --numCycles: number of repetitions through a file</br>
-    --segmentSize: size of a segment (0 = filesize)</br>
-    --numFiles: number of virtual files to simulate </br>
+    --numCycles: number of repetitions through a file\
+    --segmentSize: size of a segment (0 = filesize)\
+    --numFiles: number of virtual files to simulate \
 
 4. individual i/o parameters
-    --readSize: average size of a read operation</br>
-    --readCofV: read size coefficient of variation (normal distribution)</br>
-    --readProbability: probability that any fiven read is actually performed </br>
-    --outputSize: total size of data written</br>
-    --outputPattern: strided=data written after a "segment" has been read, batch=all data is written at the end</br>
+    --readSize: average size of a read operation\
+    --readCofV: read size coefficient of variation (normal distribution)\
+    --readProbability: probability that any fiven read is actually performed \
+    --outputSize: total size of data written\
+    --outputPattern: strided=data written after a "segment" has been read, batch=all data is written at the end\
 
 3. Miscellaneous options
-    --maxFileSize: max pyhsical file size if the file we are generating access for </br>
-    --inputFileName: name/path of the file we are generating the accesses for</br>
-    --outputFileName: path to save access trace</br>
-    --verbose: enable verbose output</br>
-    --plot: filename where to save a plot of the resulting access pattern</br>
+    --maxFileSize: max pyhsical file size if the file we are generating access for \
+    --inputFileName: name/path of the file we are generating the accesses for\
+    --outputFileName: path to save access trace\
+    --verbose: enable verbose output\
+    --plot: filename where to save a plot of the resulting access pattern\
 
 
 Acesss file format
 ------------------------
-each line contains the following 5 elements:</br>
+each line contains the following 5 elements:\
 filename offset size 0 0
 
 
@@ -63,13 +63,13 @@ Executing an access trace
 --------------------------
 use the compiled executuable `workloadSim` 
 inputs:
---infile: the file containing the access trace produced by "File_access_pattern_gen.py"</br>
---iorate: the per task/core iorate. Note: this is the last line printed by File_access_patter_gen.py </br>
---timelimit: number of seconds to limit the absolute execution time of the simulation ( 0 = run to completion )</br>
---infilesuffix: append the provided argument to end of inputfile names within the trace</br>
-    ex: inputfile from access trace: tazer.dat </br>
-        --infilesuffix=meta.in </br>
-        resulting filename = tazer.dat.meta.in</br>
+--infile: the file containing the access trace produced by "File_access_pattern_gen.py"\
+--iorate: the per task/core iorate. Note: this is the last line printed by File_access_patter_gen.py \
+--timelimit: number of seconds to limit the absolute execution time of the simulation ( 0 = run to completion )\
+--infilesuffix: append the provided argument to end of inputfile names within the trace\
+    ex: inputfile from access trace: tazer.dat \
+        --infilesuffix=meta.in \
+        resulting filename = tazer.dat.meta.in\
 
 
 Example:
