@@ -61,7 +61,8 @@ size: size of the i/o operation\
 
 Executing an access trace
 --------------------------
-use the compiled executuable `workloadSim`. 
+use the compiled executuable `workloadSim`.
+
 inputs:\
 --infile: the file containing the access trace produced by "File_access_pattern_gen.py"\
 --iorate: the per task/core iorate. Note: this is the last line printed by File_access_patter_gen.py \
@@ -75,16 +76,21 @@ inputs:\
 Example:
 ------------
 0. make a dummy input file:
+
 `dd if=/dev/urandom of=tazer.dat bs=64M count=32`
 
 1. Sequential Read all bytes in a file: 16K readsize\
+
 generate access file:\
 `python File_access_pattern_gen.py --ioRate=125 --numCores=10 --tasksPerCore=1 --execTime=30 --segmentSize=0 --numCycles=1 --readProbability=1 --readSize=$((16*1024))  --inputFileName=tazer.dat --maxFileSize=$((1024*1024*1024)) --outputFileName=linear_access_16K.txt --plot=linear_access_16K.png`
+
 playback access file:\
 `./workloadSim --infile linear_access_16K.txt --iorate 12.5`
 
 2. 8MB segments, 300K readsize, read probabaility .25, 4 cycles\
+
 generate access file:\
 `python File_access_pattern_gen.py --ioRate=125 --numCores=10 --tasksPerCore=1 --execTime=30 --segmentSize=0 --numCycles=4 --readProbability=.25 --readSize=$((300*1024))  --inputFileName=tazer.dat --maxFileSize=$((1024*1024*1024)) --outputFileName=8MBsegemented_access_4cycles_300K.txt --plot=8MBsegemented_access_4cycles_300K.png`
+
 playback access file:\
 `./workloadSim --infile 8MBsegemented_access_4cycles_300K.txt --iorate 12.5`
