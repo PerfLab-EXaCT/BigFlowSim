@@ -18,50 +18,50 @@ to build WorkloadSim.cpp simply type:
 
 Creating access patterns
 -------------------------
-Use File_access_pattern_gen.py to create access pattern files\
+Use File_access_pattern_gen.py to create access pattern files. 
 
-the input arguments can losely be characterized by 4 groups:\
+the input arguments can losely be characterized by 4 groups:  
 
 1. experiment/architecture parameters\
     --ioRate: experiment wide io rate (MB/s) -> cumulative i/o rate accross all cores (internally the per core i/o rate == ioRate/numCores)\
     --tasksPerCore: number of tasks to execute on each core \
     --numCores: number of cores in experiment -> number of simultaneously executing tasks\
-    --execTime: desired cpu time (seconds) \
+    --execTime: desired cpu time (seconds)
 
 2. file access parameters\
     --numCycles: number of repetitions through a file\
     --segmentSize: size of a segment (0 = filesize)\
-    --numFiles: number of virtual files to simulate \
+    --numFiles: number of virtual files to simulate
 
 4. individual i/o parameters\
     --readSize: average size of a read operation\
     --readCofV: read size coefficient of variation (normal distribution)\
     --readProbability: probability that any fiven read is actually performed \
     --outputSize: total size of data written\
-    --outputPattern: strided=data written after a "segment" has been read, batch=all data is written at the end\
+    --outputPattern: strided=data written after a "segment" has been read, batch=all data is written at the end
 
 3. Miscellaneous options\
     --maxFileSize: max pyhsical file size if the file we are generating access for \
     --inputFileName: name/path of the file we are generating the accesses for\
     --outputFileName: path to save access trace\
     --verbose: enable verbose output\
-    --plot: filename where to save a plot of the resulting access pattern\
+    --plot: filename where to save a plot of the resulting access pattern
 
 
 Acesss file format
 ------------------------
-each line contains the following 5 elements:\
-filename offset size 0 0\
+each line contains the following 5 elements:  
+filename offset size 0 0
 
 
 filename: the name/path of the physical file. the simulator will open this file.\
 offset: starting offset for this specific i/o operation\
 size: size of the i/o operation\
-0 0: currently unused\
+0 0: currently unused
 
 Executing an access trace
 --------------------------
-use the compiled executuable `workloadSim`\ 
+use the compiled executuable `workloadSim`. 
 inputs:\
 --infile: the file containing the access trace produced by "File_access_pattern_gen.py"\
 --iorate: the per task/core iorate. Note: this is the last line printed by File_access_patter_gen.py \
