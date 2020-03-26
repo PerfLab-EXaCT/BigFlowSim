@@ -90,7 +90,7 @@ playback access file:\
 2. 8MB segments, 300K readsize, read probabaility .25, 4 cycles\
 
 generate access file:\
-`python File_access_pattern_gen.py --ioRate=125 --numCores=10 --tasksPerCore=1 --execTime=30 --segmentSize=0 --numCycles=4 --readProbability=.25 --readSize=$((300*1024))  --inputFileName=tazer.dat --maxFileSize=$((1024*1024*1024)) --outputFileName=8MBsegemented_access_4cycles_300K.txt --plot=8MBsegemented_access_4cycles_300K.png`
+`python File_access_pattern_gen.py --ioRate=125 --numCores=10 --tasksPerCore=1 --execTime=30 --segmentSize=$((8*1024*1024)) --numCycles=4 --readProbability=.25 --readSize=$((300*1024))  --inputFileName=tazer.dat --maxFileSize=$((1024*1024*1024)) --outputFileName=8MBsegemented_access_4cycles_300K.txt --plot=8MBsegemented_access_4cycles_300K.png`
 
 playback access file:\
 `./workloadSim --infile 8MBsegemented_access_4cycles_300K.txt --iorate 12.5`
