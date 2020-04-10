@@ -32,6 +32,7 @@ the input arguments can losely be characterized by 4 groups:\
     --numCycles: number of repetitions through a file\
     --segmentSize: size of a segment (0 = filesize)\
     --numFiles: number of virtual files to simulate \
+    --random: produce a random access pattern (can be used in conjuction with the other i/o parameters)
 
 4. individual i/o parameters\
     --readSize: average size of a read operation\
@@ -83,8 +84,17 @@ generate access file:\
 playback access file:\
 `./workloadSim --infile linear_access_16K.txt --iorate 12.5`
 
+
 2. 8MB segments, 300K readsize, read probabaility .25, 4 cycles\
 generate access file:\
-`python File_access_pattern_gen.py --ioRate=125 --numCores=10 --tasksPerCore=1 --execTime=30 --segmentSize=0 --numCycles=4 --readProbability=.25 --readSize=$((300*1024))  --inputFileName=tazer.dat --maxFileSize=$((1024*1024*1024)) --outputFileName=8MBsegemented_access_4cycles_300K.txt --plot=8MBsegemented_access_4cycles_300K.png`
+`python File_access_pattern_gen.py --ioRate=125 --numCores=10 --tasksPerCore=1 --execTime=30 --segmentSize=$((8*1024)) --numCycles=4 --readProbability=.25 --readSize=$((300*1024))  --inputFileName=tazer.dat --maxFileSize=$((1024*1024*1024)) --outputFileName=8MBsegemented_access_4cycles_300K.txt --plot=8MBsegemented_access_4cycles_300K.png`
 playback access file:\
 `./workloadSim --infile 8MBsegemented_access_4cycles_300K.txt --iorate 12.5`
+
+3. 64MB segments, 8k readsize, read probability .25, no cycles, random access, batched output\
+generate access file:\
+`python File_access_pattern_gen.py --ioRate=125 --numCores=10 --tasksPerCore=1 --execTime=30 --segmentSize=$((64*1024*1024)) --readProbability=.25 --readSize=$((8*1024)) --plot=64MBsegemented_random_access_8K.png --inputFileName=tazer.dat --maxFileSize=$((1024*1024*1024)) --outputFileName="64MBsegemented_random_access_8K" -w batched --random`
+playback access file:\
+`./workloadSim --infile 64MBsegemented_random_access_8K.txt --iorate 12.5`
+
+

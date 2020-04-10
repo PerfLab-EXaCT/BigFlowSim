@@ -12,12 +12,12 @@ def genAccess(fsize,fname, rsize, rcofv, rprob, fileStarts, segmentStarts, bsize
             abs(int(np.random.normal(rsize, rsize*rcofv)))
         if rprob > np.random.rand():
             accesses.append((fileInd, actual_read_size, fIdx))
-            of.write(fname + " " + str(fileInd) +
-                     " " + str(actual_read_size)+" 0 0\n")
+            # of.write(fname + " " + str(fileInd) +
+            #          " " + str(actual_read_size)+" 0 0\n")
         fileInd += actual_read_size
 
 
-def genAccessPattern(dsize, fname, physicalFileSize, nfiles, rsize, rcofv, rprob, segmentSize, nreps, osize, wtype, outName):
+def genAccessPattern(dsize, fname, physicalFileSize, nfiles, rsize, rcofv, rprob, segmentSize, nreps, osize, wtype, outName, random):
     fsize = int(dsize/nfiles)
     ssize = segmentSize if segmentSize > 0 else fsize
     nsegs = int(fsize/ssize) + (1 if ssize % fsize > 0 else 0)
@@ -32,13 +32,20 @@ def genAccessPattern(dsize, fname, physicalFileSize, nfiles, rsize, rcofv, rprob
         for f in range(nfiles):
             for b in range(nsegs):
                 for _ in range(nreps):
+                    tmp_accesses=[]
                     genAccess(fsize, fname, rsize, rcofv, rprob, fileStarts,
-                              segmentStarts, ssize, b, f, accesses, of)
-                if wtype is "strided":
+                              segmentStarts, ssize, b, f, tmp_accesses, of)
+                    if random:
+                        np.random.shuffle(tmp_accesses)
+                    for (fileInd, actual_read_size, fIdx) in tmp_accesses:
+                        of.write(fname + " " + str(fileInd) + " " + str(actual_read_size)+" 0 0\n")
+                    
+                    accesses += tmp_accesses
+                if wtype == "strided":
                     of.write("tazer_output.dat "+str(outInd) +
                                 " "+str(wsize) + " 0 0\n")
                     outInd += wsize
-        if wtype is "batch":
+        if wtype == "batched":
             of.write("tazer_output.dat "+str(outInd)+" "+str(osize) + " 0 0\n")
 
     return np.array(accesses)
@@ -66,6 +73,7 @@ if __name__ == "__main__":
                         help="number of cycles through a file", default=1)
     parser.add_argument("-s", "--segmentSize", type=int,
                         help="size of a segment (0 = fileSize)", default=0)
+    parser.add_argument("-R","--random",action='store_true',help= "enable random acccess pattern")
     
 
     # individual read parameters
@@ -107,7 +115,7 @@ if __name__ == "__main__":
 
     if maxFileSize <= args.maxFileSize:
         accesses = genAccessPattern(maxFileSize, args.inputFileName, args.maxFileSize, args.numFiles, args.readSize, args.readCofV,
-                                    args.readProbability, args.segmentSize, args.numCycles, args.outputSize, args.outputPattern, args.outputFileName)
+                                    args.readProbability, args.segmentSize, args.numCycles, args.outputSize, args.outputPattern, args.outputFileName, args.random)
     else:
         print("ERROR: Physical File Size is smaller than required given paramemters")
         print("required file size > ",int(maxFileSize),"bytes" )
