@@ -97,13 +97,16 @@ void loadData(std::string file, std::vector<std::string> &files, std::vector<uin
     }
 }
 
-std::tuple<double, double, double, double, double> executeTrace(std::vector<std::string> &files, std::string inFileSuffix, std::vector<uint64_t> &offsets, std::vector<uint64_t> &counts, double ioIntensity, double timeVar, uint64_t largest, int64_t timeLimit) {
+std::tuple<double, double, double, double, double> executeTrace(std::vector<std::string> &files, std::string inFileSuffix, std::string outFileSuffix, std::vector<uint64_t> &offsets, std::vector<uint64_t> &counts, double ioIntensity, double timeVar, uint64_t largest, int64_t timeLimit) {
     auto tempStart = getCurrentTime();
     double sumCpuTime = 0;
     double actualCpuTime = 0;
     double ioTime = 0;
     double closeTime = 0;
     double openTime = 0;
+    double miscTime1 = 0;
+    double miscTime2 = 0;
+    double miscTime3 = 0;
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -116,19 +119,22 @@ std::tuple<double, double, double, double, double> executeTrace(std::vector<std:
     std::string curFile = "";
     bool output = false;
     for (int i = 0; i < numAccesses; i++) {
+        auto start = getCurrentTime();
         if (timeLimit && getCurrentTime() - tempStart >= timeLimit*billion) {
 	    break;
         }
-        auto start = getCurrentTime();
+        miscTime1 +=getCurrentTime() - start;
+        start = getCurrentTime();
+        
         if (files[i] != curFile) {
             if (fd) {
                 close(fd);
                 closeTime += getCurrentTime() - start;
             }
             if (files[i].find("output") != std::string::npos) {
-                fd = open((files[i] + ".meta.out").c_str(), O_WRONLY);
+                fd = open((files[i] + outFileSuffix).c_str(), O_WRONLY | O_CREAT, 0666);
                 output = true;
-                std::cout << files[i] + ".meta.out" << std::endl;
+                std::cout << files[i] + outFileSuffix << std::endl;
                 openTime += getCurrentTime() - start;
             }
             else {
@@ -147,6 +153,7 @@ std::tuple<double, double, double, double, double> executeTrace(std::vector<std:
             read(fd, buf, counts[i]);
         }
         ioTime += getCurrentTime() - start;
+        start = getCurrentTime();
         double cpu = 0.0;
         uint64_t cput = 0;
         
@@ -155,7 +162,7 @@ std::tuple<double, double, double, double, double> executeTrace(std::vector<std:
             cpu += cpu * dis(gen) * timeVar;
             cput = cpu * billion;
         }
-        
+        miscTime2 += getCurrentTime() - start;
         start = getCurrentTime();
         while (getCurrentTime() - start < cput) {
             std::this_thread::yield();
@@ -164,9 +171,12 @@ std::tuple<double, double, double, double, double> executeTrace(std::vector<std:
         sumCpuTime += cpu;
         actualCpuTime += getCurrentTime() - start;
 
+        start = getCurrentTime();
         if (i % div == 0) {
-            std::cout << (i / (double)numAccesses) * 100 << "% sim: " << sumCpuTime << "s actual: " << actualCpuTime / billion << " io: " << ioTime / billion << " open: " << openTime / billion << " close: " << closeTime / billion << " " << (getCurrentTime() - tempStart) / billion << std::endl;
+            std::cout << (i / (double)numAccesses) * 100 << "% sim: " << sumCpuTime << "s actual: " << actualCpuTime / billion << " io: " << ioTime / billion << " open: " << openTime / billion << " close: " << closeTime / billion
+            <<" misc time1: "<<miscTime1/billion <<" misc time2: "<<miscTime2/billion<<" misc time3: "<<miscTime3/billion<< " total time: " << (getCurrentTime() - tempStart) / billion << std::endl;
         }
+        miscTime3 += getCurrentTime() - start;
     }
     auto start = getCurrentTime();
     if (fd) {
@@ -184,6 +194,7 @@ int main(int argc, char *argv[]) {
 
     std::string dataFile = getStringArg(argv, argv + argc, "-f", "--infile", "access_new_in_out.txt");
     std::string inFileSuffix = getStringArg(argv, argv + argc, "-m", "--infilesuffix", "");
+    std::string outFileSuffix = getStringArg(argv, argv + argc, "-o", "--outfilesuffix","");
     double ioIntensity = getDoubleArg(argv, argv + argc, "-i", "--iorate", 1000.0);
     int64_t timeLimit = getIntArg(argv, argv + argc, "-t", "--timelimit", 0);
     double timeVar = 0.05;
@@ -202,7 +213,7 @@ int main(int argc, char *argv[]) {
     loadData(dataFile, files, offsets, counts, largest);
     uint64_t setupTime = getCurrentTime() - startTime;
     uint64_t simTime = getCurrentTime();
-    auto vals = executeTrace(files, inFileSuffix, offsets, counts, ioIntensity, timeVar, largest, timeLimit);
+    auto vals = executeTrace(files, inFileSuffix, outFileSuffix, offsets, counts, ioIntensity, timeVar, largest, timeLimit);
     simTime = getCurrentTime() - simTime;
     uint64_t totTime = getCurrentTime() - startTime;
     std::cout << "Setup time: " << setupTime / billion << std::endl;
