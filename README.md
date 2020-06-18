@@ -31,12 +31,8 @@ the input arguments can losely be characterized by 4 groups:
 2. file access parameters\
     --numCycles: number of repetitions through a file\
     --segmentSize: size of a segment (0 = filesize)\
-<<<<<<< HEAD
     --numFiles: number of virtual files to simulate \
     --random: produce a random access pattern (can be used in conjuction with the other i/o parameters)
-=======
-    --numFiles: number of virtual files to simulate
->>>>>>> b66a99e3a939d38593344263db6005bb334717a5
 
 4. individual i/o parameters\
     --readSize: average size of a read operation\
