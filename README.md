@@ -1,9 +1,11 @@
 -*-Mode: markdown;-*-
 
-TAZeR Workflow Generator
+TAZeR's BigFlowSim
 ============================================================
 
-The workflow generator consists of two main components:
+BigFlowSim is a workflow I/O simulator that simulates several parameters that affect local and remote I/O, including I/O intensity, data reuse, data locality, data access pattern, and data movement. BigFlowSim can be used to generate a synthetic I/O traces and benchmarks. It can also be used to study the effects or trade-offs of different parameters
+
+BigFlowSim consists of two main components:
 
 1. Workflow Generation (File_access_pattern_gen.py)
 2. Workflow Playback (WorkloadSim.cpp)
