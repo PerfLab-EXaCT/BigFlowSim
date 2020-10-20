@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <vector>
 #include <string.h>
+#include <xxhash.h>
 
 const double billion = 1000000000.0;
 
@@ -183,8 +184,56 @@ std::tuple<double, double, double, double, double> executeTrace(std::vector<std:
         close(fd);
         closeTime += getCurrentTime() - start;
     }
+
     delete[] buf;
     return std::make_tuple(sumCpuTime, ioTime / billion, actualCpuTime / billion, openTime / billion, closeTime / billion);
+}
+
+uint64_t generate_hash(std::vector<std::string> &files, std::string inFileSuffix, std::string outFileSuffix, std::vector<uint64_t> &offsets, std::vector<uint64_t> &counts, uint64_t largest) {
+
+    uint64_t numAccesses = files.size();
+    char *buf = new char[largest];
+    int fd = 0;
+    std::string curFile = "";
+    bool output = false;
+    uint64_t hash_sum = 0;
+
+    for (int i = 0; i < numAccesses; i++) {
+        
+        if (files[i] != curFile) {
+            if (fd) {
+                close(fd);
+            }
+            if (files[i].find("output") != std::string::npos) {
+                fd = open((files[i] + outFileSuffix).c_str(), O_WRONLY | O_CREAT, 0666);
+                output = true;
+                std::cout << files[i] + outFileSuffix << std::endl;
+            }
+            else {
+                fd = open((files[i] + inFileSuffix).c_str(), O_RDONLY);
+                output = false;
+                std::cout << files[i] + inFileSuffix << std::endl;
+            }
+            curFile = files[i];
+        }
+        if (output) {
+            write(fd, buf, counts[i]);
+        }
+        else {
+            lseek(fd, offsets[i], SEEK_SET);
+            read(fd, buf, counts[i]);
+            hash_sum += XXH64(buf, counts[i], 0);
+        }
+    }
+
+    if (fd) {
+        close(fd);
+    }
+    delete[] buf;
+
+    std::ofstream hashFile("hash.txt");
+    hashFile << hash_sum << std::endl;
+    return hash_sum;
 }
 
 int main(int argc, char *argv[]) {
@@ -198,6 +247,7 @@ int main(int argc, char *argv[]) {
     double ioIntensity = getDoubleArg(argv, argv + argc, "-i", "--iorate", 1000.0);
     int64_t timeLimit = getIntArg(argv, argv + argc, "-t", "--timelimit", 0);
     double timeVar = 0.05;
+    std::string calcHash = getStringArg(argv, argv + argc, "-h", "--calculatehash", "false");
 
     double cpuTime = 0;
     double ioOpenTime = 0;
@@ -213,15 +263,26 @@ int main(int argc, char *argv[]) {
     loadData(dataFile, files, offsets, counts, largest);
     uint64_t setupTime = getCurrentTime() - startTime;
     uint64_t simTime = getCurrentTime();
-    auto vals = executeTrace(files, inFileSuffix, outFileSuffix, offsets, counts, ioIntensity, timeVar, largest, timeLimit);
-    simTime = getCurrentTime() - simTime;
-    uint64_t totTime = getCurrentTime() - startTime;
-    std::cout << "Setup time: " << setupTime / billion << std::endl;
-    std::cout << "Total sim time: " << simTime / billion << std::endl;
-    std::cout << "sim cpu time: " << std::get<0>(vals) << std::endl;
-    std::cout << "actual cpu time: " << std::get<2>(vals) << std::endl;
-    std::cout << "io time: " << std::get<1>(vals) << std::endl;
-    std::cout << "open time: " << std::get<3>(vals) << std::endl;
-    std::cout << "close time: " << std::get<4>(vals) << std::endl;
-    std::cout << "fulltime: " << totTime / billion << std::endl;
+    
+    if (calcHash != "only") {
+        auto vals = executeTrace(files, inFileSuffix, outFileSuffix, offsets, counts, ioIntensity, timeVar, largest, timeLimit);
+        simTime = getCurrentTime() - simTime;
+        uint64_t totTime = getCurrentTime() - startTime;
+        std::cout << "Setup time: " << setupTime / billion << std::endl;
+        std::cout << "Total sim time: " << simTime / billion << std::endl;
+        std::cout << "sim cpu time: " << std::get<0>(vals) << std::endl;
+        std::cout << "actual cpu time: " << std::get<2>(vals) << std::endl;
+        std::cout << "io time: " << std::get<1>(vals) << std::endl;
+        std::cout << "open time: " << std::get<3>(vals) << std::endl;
+        std::cout << "close time: " << std::get<4>(vals) << std::endl;
+        std::cout << "fulltime: " << totTime / billion << std::endl;
+    }
+
+    if (calcHash == "true" || calcHash == "only") {
+        uint64_t hash_sum;
+        hash_sum = generate_hash(files, inFileSuffix, outFileSuffix, offsets, counts, largest);
+        std::cout << "hash_sum: " << hash_sum << std::endl;
+    }
+    
 }
+

@@ -1,4 +1,4 @@
 all: WorkloadSim
 
-WorkloadSim: src/WorkloadSim.cpp
-	g++ -O3 -g src/WorkloadSim.cpp -o workloadSim
+WorkloadSim: src/WorkloadSim.cpp src/xxhash.c
+	g++ -O3 -g -Iinc/ src/WorkloadSim.cpp src/xxhash.c -o workloadSim
