@@ -98,7 +98,7 @@ void loadData(std::string file, std::vector<std::string> &files, std::vector<uin
     }
 }
 
-std::tuple<double, double, double, double, double> executeTrace(std::vector<std::string> &files, std::string inFileSuffix, std::string outFileSuffix, std::vector<uint64_t> &offsets, std::vector<uint64_t> &counts, double ioIntensity, double timeVar, uint64_t largest, int64_t timeLimit) {
+std::tuple<double, double, double, double, double,uint64_t> executeTrace(std::vector<std::string> &files, std::string inFileSuffix, std::string outFileSuffix, std::vector<uint64_t> &offsets, std::vector<uint64_t> &counts, double ioIntensity, double timeVar, uint64_t largest, int64_t timeLimit) {
     auto tempStart = getCurrentTime();
     double sumCpuTime = 0;
     double actualCpuTime = 0;
@@ -119,6 +119,8 @@ std::tuple<double, double, double, double, double> executeTrace(std::vector<std:
     int fd = 0;
     std::string curFile = "";
     bool output = false;
+    uint64_t hash_sum = 0;
+     
     for (int i = 0; i < numAccesses; i++) {
         auto start = getCurrentTime();
         if (timeLimit && getCurrentTime() - tempStart >= timeLimit*billion) {
@@ -152,6 +154,7 @@ std::tuple<double, double, double, double, double> executeTrace(std::vector<std:
         else {
             lseek(fd, offsets[i], SEEK_SET);
             read(fd, buf, counts[i]);
+            hash_sum += XXH64(buf, counts[i], 0);
         }
         ioTime += getCurrentTime() - start;
         start = getCurrentTime();
@@ -186,7 +189,7 @@ std::tuple<double, double, double, double, double> executeTrace(std::vector<std:
     }
 
     delete[] buf;
-    return std::make_tuple(sumCpuTime, ioTime / billion, actualCpuTime / billion, openTime / billion, closeTime / billion);
+    return std::make_tuple(sumCpuTime, ioTime / billion, actualCpuTime / billion, openTime / billion, closeTime / billion, hash_sum);
 }
 
 uint64_t generate_hash(std::vector<std::string> &files, std::string inFileSuffix, std::string outFileSuffix, std::vector<uint64_t> &offsets, std::vector<uint64_t> &counts, uint64_t largest) {
@@ -231,8 +234,6 @@ uint64_t generate_hash(std::vector<std::string> &files, std::string inFileSuffix
     }
     delete[] buf;
 
-    std::ofstream hashFile("hash.txt");
-    hashFile << hash_sum << std::endl;
     return hash_sum;
 }
 
@@ -263,6 +264,7 @@ int main(int argc, char *argv[]) {
     loadData(dataFile, files, offsets, counts, largest);
     uint64_t setupTime = getCurrentTime() - startTime;
     uint64_t simTime = getCurrentTime();
+    uint64_t hash_sum =0;
     
     if (calcHash != "only") {
         auto vals = executeTrace(files, inFileSuffix, outFileSuffix, offsets, counts, ioIntensity, timeVar, largest, timeLimit);
@@ -276,12 +278,18 @@ int main(int argc, char *argv[]) {
         std::cout << "open time: " << std::get<3>(vals) << std::endl;
         std::cout << "close time: " << std::get<4>(vals) << std::endl;
         std::cout << "fulltime: " << totTime / billion << std::endl;
+        hash_sum = std::get<5>(vals);
     }
 
-    if (calcHash == "true" || calcHash == "only") {
-        uint64_t hash_sum;
+    if ( calcHash == "only") {        
         hash_sum = generate_hash(files, inFileSuffix, outFileSuffix, offsets, counts, largest);
+    }
+    
+    if (calcHash != "false"){
         std::cout << "hash_sum: " << hash_sum << std::endl;
+        std::ofstream hashFile("hash.txt");
+        hashFile << hash_sum << std::endl;
+        
     }
     
 }
