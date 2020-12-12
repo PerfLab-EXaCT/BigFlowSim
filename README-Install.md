@@ -13,7 +13,9 @@ BigFlowSim consists of two main components:
 
 To build WorkloadSim.cpp simply type:
 
-`make`
+```
+`make
+```
 
 
 Using
