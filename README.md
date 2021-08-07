@@ -7,11 +7,11 @@ TAZeR's BigFlowSim
 =============================================================================
 
 **Home**:
-  - <https://gitlab.pnnl.gov/perf-lab-hub/tazer/tazer-bigflow-sim>
+  - <https://gitlab.pnnl.gov/perf-lab/tazer/tazer-bigflow-sim>
   
 **Tazer Home**:
   - <https://github.com/pnnl/tazer/>
-  - <https://gitlab.pnnl.gov/perf-lab-hub/tazer>
+  - <https://gitlab.pnnl.gov/perf-lab/tazer>
 
 
 **About**: BigFlowSim is a workflow I/O simulator that simulates several parameters that affect local and remote I/O, including I/O intensity, data reuse, data locality, data access pattern, and data movement. BigFlowSim can be used to generate a synthetic I/O traces and benchmarks. It can also be used to study the effects or trade-offs of different parameters
