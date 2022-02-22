@@ -11,8 +11,11 @@
 #include <tuple>
 #include <unistd.h>
 #include <vector>
+#include <map>
 #include <string.h>
 #include <xxhash.h>
+
+#define OPENFILESFIRST 0
 
 const double billion = 1000000000.0;
 
@@ -98,6 +101,26 @@ void loadData(std::string file, std::vector<std::string> &files, std::vector<uin
     }
 }
 
+int openFile(std::string filename, std::string outFileSuffix, std::string inFileSuffix, bool &output) {
+    int fd = 0;
+    if (filename.find("output") != std::string::npos) {
+        fd = open((filename + outFileSuffix).c_str(), O_WRONLY | O_CREAT, 0666);
+        output = true;
+    }
+    else {
+        fd = open((filename + inFileSuffix).c_str(), O_RDONLY);
+        output = false;
+    }
+
+    if(fd == -1) {
+        auto suffix = (output) ? outFileSuffix : inFileSuffix;
+        std::cout << "Failed to open " << filename + suffix << std::endl;
+        std::perror("Error:");
+        exit(1);
+    }
+    return fd;
+}
+
 std::tuple<double, double, double, double, double,uint64_t> executeTrace(std::vector<std::string> &files, std::string inFileSuffix, std::string outFileSuffix, std::vector<uint64_t> &offsets, std::vector<uint64_t> &counts, double ioIntensity, double timeVar, uint64_t largest, int64_t timeLimit) {
     auto tempStart = getCurrentTime();
     double sumCpuTime = 0;
@@ -120,31 +143,46 @@ std::tuple<double, double, double, double, double,uint64_t> executeTrace(std::ve
     std::string curFile = "";
     bool output = false;
     uint64_t hash_sum = 0;
-     
+
+    bool closeFiles = true;
+
+    #ifdef OPENFILESFIRST
+    std::map<std::string,int> fds;
+    auto openStart = getCurrentTime();
+    for(auto name: files) {
+        auto it = fds.find(name);
+        if(it == fds.end())
+            fds[name] = openFile(name, outFileSuffix, inFileSuffix, output);
+    }
+    openTime += getCurrentTime() - openStart;
+    closeFiles = false;
+    #endif
+
+    std::cerr << "--------- " <<  numAccesses << " --------- " << curFile << std::endl;
     for (int i = 0; i < numAccesses; i++) {
         auto start = getCurrentTime();
         if (timeLimit && getCurrentTime() - tempStart >= timeLimit*billion) {
-	    break;
+	        break;
         }
         miscTime1 +=getCurrentTime() - start;
         start = getCurrentTime();
-        
+
         if (files[i] != curFile) {
-            if (fd) {
-                close(fd);
-                closeTime += getCurrentTime() - start;
-            }
-            if (files[i].find("output") != std::string::npos) {
-                fd = open((files[i] + outFileSuffix).c_str(), O_WRONLY | O_CREAT, 0666);
+            if (files[i].find("output") != std::string::npos)
                 output = true;
-                std::cout << files[i] + outFileSuffix << std::endl;
+            else
+                output = false;
+            if (closeFiles) {
+                if (fd) {
+                    close(fd);
+                    closeTime += getCurrentTime() - start;
+                    start = getCurrentTime();
+                }
+                fd = openFile(files[i], outFileSuffix, inFileSuffix, output);
                 openTime += getCurrentTime() - start;
             }
-            else {
-                fd = open((files[i] + inFileSuffix).c_str(), O_RDONLY);
-                output = false;
-                std::cout << files[i] + inFileSuffix << std::endl;
-                openTime += getCurrentTime() - start;
+            else{
+                fd = fds[files[i]];
             }
             curFile = files[i];
         }
@@ -152,9 +190,12 @@ std::tuple<double, double, double, double, double,uint64_t> executeTrace(std::ve
             write(fd, buf, counts[i]);
         }
         else {
+            // printf("OFFSET: %lu SIZE: %lu\n", offsets[i], counts[i]);
             lseek(fd, offsets[i], SEEK_SET);
+            // TODO: check
             read(fd, buf, counts[i]);
             hash_sum += XXH64(buf, counts[i], 0);
+            // printf("BUFF: %c%c%c%c\n", buf[0], buf[1], buf[2], buf[3]);
         }
         ioTime += getCurrentTime() - start;
         start = getCurrentTime();
@@ -183,11 +224,18 @@ std::tuple<double, double, double, double, double,uint64_t> executeTrace(std::ve
         miscTime3 += getCurrentTime() - start;
     }
     auto start = getCurrentTime();
-    if (fd) {
-        close(fd);
+    if (closeFiles) {
+        if(fd) {
+            close(fd);
+            closeTime += getCurrentTime() - start;
+        }
+    }
+    else {
+        for(auto pair : fds)
+            close(pair.second);
         closeTime += getCurrentTime() - start;
     }
-
+    
     delete[] buf;
     return std::make_tuple(sumCpuTime, ioTime / billion, actualCpuTime / billion, openTime / billion, closeTime / billion, hash_sum);
 }
@@ -249,7 +297,7 @@ int main(int argc, char *argv[]) {
     int64_t timeLimit = getIntArg(argv, argv + argc, "-t", "--timelimit", 0);
     double timeVar = 0.05;
     std::string calcHash = getStringArg(argv, argv + argc, "-h", "--calculatehash", "false");
-
+    
     double cpuTime = 0;
     double ioOpenTime = 0;
     double ioReadTime = 0;
@@ -289,8 +337,8 @@ int main(int argc, char *argv[]) {
         std::cout << "hash_sum: " << hash_sum << std::endl;
         std::ofstream hashFile("hash.txt");
         hashFile << hash_sum << std::endl;
-        
+
     }
-    
+    return 0;
 }
 
