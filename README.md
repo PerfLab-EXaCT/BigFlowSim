@@ -33,7 +33,7 @@ BigFlowSim consists of two main components: workflow generation and workflow pla
 References
 -----------------------------------------------------------------------------
 
-* Ryan D. Friese, Burcu O. Mutlu, Nathan R. Tallent, Joshua Suetterlein, Jan Strube, "Effectively using remote I/O for work composition in distributed workflows," in Proc. of the 2020 IEEE Intl. Conf. on Big Data, IEEE Computer Society, December 2020.
+* Ryan D. Friese, Burcu O. Mutlu, Nathan R. Tallent, Joshua Suetterlein, Jan Strube, "Effectively using remote I/O for work composition in distributed workflows," in Proc. of the 2020 IEEE Intl. Conf. on Big Data, IEEE Computer Society, December 2020. <http://doi.org/10.1109/BigData50022.2020.9378352>
 
 
 Acknowledgements

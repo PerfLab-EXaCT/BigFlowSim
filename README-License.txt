@@ -1,6 +1,5 @@
                               BigFlowSim
-         gitlab.pnnl.gov/perf-lab-hub/tazer/tazer-bigflow-sim
-
+           gitlab.pnnl.gov/perf-lab/tazer/tazer-bigflow-sim
 
 Copyright ((c)) 2020, Battelle Memorial Institute
 
