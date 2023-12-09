@@ -1,18 +1,14 @@
--*-Mode: markdown;-*-
+<!-- -*-Mode: markdown;-*- -->
+<!-- $Id$ -->
 
-$Id$
-
-
-TAZeR's BigFlowSim
+BigFlowSim
 =============================================================================
 
 **Home**:
-  - <https://gitlab.pnnl.gov/perf-lab/tazer/tazer-bigflow-sim>
+  - https://github.com/PerfLab-EXaCT/BigFlowSim
   
-**Tazer Home**:
-  - <https://github.com/pnnl/tazer/>
-  - <https://gitlab.pnnl.gov/perf-lab/tazer>
-
+  - [Performance Lab for EXtreme Computing and daTa](https://github.com/perflab-exact)
+  
 
 **About**: BigFlowSim is a workflow I/O simulator that simulates several parameters that affect local and remote I/O, including I/O intensity, data reuse, data locality, data access pattern, and data movement. BigFlowSim can be used to generate a synthetic I/O traces and benchmarks. It can also be used to study the effects or trade-offs of different parameters
 
@@ -21,13 +17,13 @@ BigFlowSim consists of two main components: workflow generation and workflow pla
 
 **Contacts**: (_firstname_._lastname_@pnnl.gov)
   - Ryan D. Friese
-  - Nathan R. Tallent
+  - Nathan R. Tallent ([www](https://hpc.pnnl.gov/people/tallent)), ([www](https://www.pnnl.gov/people/nathan-tallent))
 
 
 **Contributors**:
   - Ryan D. Friese (PNNL)
   - Burcu O. Mutlu (PNNL)
-  - Nathan R. Tallent (PNNL)
+  - Nathan R. Tallent ([www](https://hpc.pnnl.gov/people/tallent)), ([www](https://www.pnnl.gov/people/nathan-tallent))
 
 
 References
